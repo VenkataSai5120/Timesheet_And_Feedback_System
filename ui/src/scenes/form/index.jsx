@@ -7,8 +7,30 @@ import Header from "../../components/Header";
 const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const handleFormSubmit = (values) => {
+  const register = async (values, { resetForm }) => {
+    try {
+      const savedUserResponse = await fetch(
+        "http://localhost:6001/auth/register",
+        {
+          method: "POST",
+          body: JSON.stringify(values),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const savedUser = await savedUserResponse.json();
+      console.log(savedUser);
+      resetForm();
+
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  };
+
+  const handleFormSubmit = (values, { resetForm }) => {
     console.log(values);
+    register(values, { resetForm });
   };
 
   return (
@@ -92,14 +114,14 @@ const Form = () => {
               <TextField
                 fullWidth
                 variant="filled"
-                type="text"
-                label="Address 1"
+                type="password"
+                label="Password"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.address1}
-                name="address1"
-                error={!!touched.address1 && !!errors.address1}
-                helperText={touched.address1 && errors.address1}
+                value={values.password}
+                name="password"
+                error={!!touched.password && !!errors.password}
+                helperText={touched.password && errors.password}
                 sx={{ gridColumn: "span 4" }}
               />
             </Box>
@@ -126,16 +148,15 @@ const checkoutSchema = yup.object().shape({
     .string()
     .matches(phoneRegExp, "Phone number is not valid")
     .required("required"),
-  address1: yup.string().required("required"),
-  address2: yup.string().required("required"),
+  password: yup.string().required("required"),
 });
+
 const initialValues = {
   firstName: "",
   lastName: "",
   email: "",
   contact: "",
-  address1: "",
-  address2: "",
+  password: "", 
 };
 
 export default Form;
