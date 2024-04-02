@@ -3,6 +3,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const { register } = require("./controllers/auth.js");
 const authRoute = require("./routes/auth.js");
+const findRoute = require("./routes/find.js");
 const cors = require('cors');
 const bodyparser = require("body-parser");
 
@@ -17,6 +18,7 @@ app.use(bodyparser.json());
 app.post("/auth/register", register);
 
 app.use("/auth", authRoute);
+app.use("/find", findRoute);
 const PORT = process.env.PORT;
 
 mongoose

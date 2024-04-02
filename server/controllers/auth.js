@@ -29,7 +29,7 @@ const register = async (req, res) => {
 
         const savedUser = await newUser.save();
         console.log("User Registered Successfully");
-        const loginURL = "http://localhost:3000/login";
+        const loginURL = "http://localhost:3001/login";
 
         var transporter = nodemailer.createTransport({
             service: 'outlook',
@@ -64,8 +64,7 @@ const register = async (req, res) => {
             if (error) {
                 console.log(error);
             } else {
-                console.log('success')
-                return res.send({ status: "success" })
+                console.log('Email sent: ' + info.response)
             }
         });
 

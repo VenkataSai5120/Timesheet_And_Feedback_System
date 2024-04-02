@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      // unique: true,
+      unique: true,
     },
     contact: {
       type: String,
@@ -28,4 +28,4 @@ const UserSchema = new mongoose.Schema(
 );
 
 const User = mongoose.model("User", UserSchema);
-module.exports = User;
+module.exports = User;``
