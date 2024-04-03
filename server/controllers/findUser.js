@@ -5,8 +5,10 @@ const check = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email: email });
+        console.log(user);
+        console.log(user._id);
         if (user) {
-            const passwordChangeURL = `http://localhost:3000/reset-password/${user.id}`;
+            const passwordChangeURL = `http://localhost:3001/reset-password/${user._id}`;
 
             var transporter = nodemailer.createTransport({
                 service: 'outlook',

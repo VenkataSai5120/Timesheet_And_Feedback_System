@@ -11,7 +11,6 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -89,10 +88,10 @@ const Sidebar = () => {
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
                 <img
-                  alt={<AccountCircleOutlinedIcon />}
+                  alt={"icon"}
                   width="100px"
                   height="100px"
-                  src={`../../assets/user.png`}
+                  src={'https://avatars.githubusercontent.com/u/77468756?v=4'}
                   style={{ cursor: "pointer", borderRadius: "50%" }}
                 />
               </Box>

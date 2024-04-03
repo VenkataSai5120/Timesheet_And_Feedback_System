@@ -41,8 +41,8 @@ const register = async (req, res) => {
 
         var mailOptions = {
             from: 'sathvikchowdari@jmangroup.com',
-            to: 'sathvikchowdari@jmangroup.com',
-            subject: 'Password reset',
+            to: email,
+            subject: 'Welcome to Org! Your account has been successfully created.',
             text: `Dear ${firstName} ${lastName},
          
             Welcome to Org! Your account has been successfully created.
@@ -52,7 +52,7 @@ const register = async (req, res) => {
            
             Your temporary password is: ${password}
            
-            Please note that this password is only valid for one-time use. Once you log in, we strongly recommend changing your password immediately for security purposes.
+            Please note that this password is only valid for only three times. Once you log in, we strongly recommend changing your password immediately for security purposes.
            
             If you have any questions or need further assistance, feel free to contact us.
            

@@ -3,27 +3,46 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ResetPasswordForm = () => {
+  const { _id } = useParams();
   const navigate = useNavigate(); // Hook to access navigation
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
   const resetPassword = async (values, { resetForm }) => {
     try {
-      // Logic to reset password goes here
-      
-      console.log("Resetting password with values:", values);
-      resetForm();
+      const requestData = {
+        ...values,
+        _id: _id 
+      };
+      console.log(requestData);
+      const savedUserResponse = await fetch(
+        "http://localhost:6001/reset/reset-password",
+        {
+          method: "POST",
+          body: JSON.stringify(requestData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (savedUserResponse.status === 200) {
+        toast.success('Password updated successfully');
+        resetForm();
+        navigate("/login"); // Navigate to the login page
+      } else {
+        const errorMessage = await savedUserResponse.text();
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error("Error resetting password:", error);
+      toast.error('Please try again after some time.');
     }
-  };
-
-  const handleFormSubmit = (values, { resetForm }) => {
-    resetPassword(values, { resetForm });
-    navigate("/login"); // Navigate to the login page
   };
 
   return (
@@ -32,7 +51,7 @@ const ResetPasswordForm = () => {
 
       <Box>
         <Formik
-          onSubmit={handleFormSubmit}
+          onSubmit={resetPassword}
           initialValues={initialValues}
           validationSchema={resetPasswordSchema}
         >
@@ -91,6 +110,7 @@ const ResetPasswordForm = () => {
           )}
         </Formik>
       </Box>
+      <ToastContainer />
     </Box>
   );
 };
