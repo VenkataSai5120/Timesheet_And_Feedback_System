@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User.js");
+const Employee = require("../models/Employee.js");
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,15}$/;
 const nodemailer = require("nodemailer");
 
@@ -12,23 +12,30 @@ const register = async (req, res) => {
             email,
             contact,
             password,
+            department,
+            role
         } = req.body;
+
+        const id = await generateID(department, role, contact, email);
 
         console.log(req.body);
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        const newUser = new User({
+        const newUser = new Employee({
+            ID: id,
             firstName,
             lastName,
+            department,
+            role,
             email,
             contact,
             password: passwordHash,
         });
-
+        console.log("creating user");
         const savedUser = await newUser.save();
-        console.log("User Registered Successfully");
+        console.log("Employee Registered Successfully");
         const loginURL = "http://localhost:3001/login";
 
         var transporter = nodemailer.createTransport({
@@ -60,7 +67,7 @@ const register = async (req, res) => {
             Org Team`
         };
 
-        transporter.sendMail(mailOptions, function (error, info) {
+        await transporter.sendMail(mailOptions, function (error, info) {
             if (error) {
                 console.log(error);
             } else {
@@ -77,11 +84,33 @@ const register = async (req, res) => {
     }
 };
 
+const generateID = (department, role, contact, email) => {
+    const timestamp = new Date();
+    // Extracting components from the timestamp
+    const hour = timestamp.getHours().toString().padStart(2, '0');
+    const minute = timestamp.getMinutes().toString().padStart(2, '0');
+    const second = timestamp.getSeconds().toString().padStart(2, '0');
+    const day = timestamp.getDate().toString().padStart(2, '0');
+    const month = (timestamp.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed
+    const year = timestamp.getFullYear().toString().slice(-2);
+
+    // Extracting individual characters
+    const deptChar = department.charAt(0);
+    const roleChar = role.charAt(0);
+    const contactChar = contact.toString().charAt(0);
+    const emailChar = email.charAt(0);
+
+    // Generating the ID using relevant components
+    const id = `${deptChar}${roleChar}${contactChar}${emailChar}${hour}${minute}${second}${day}${month}${year}`;
+    return id;
+};
+
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email: email });
-        if (!user) return res.status(400).json({ msg: "User does not exist. " });
+        const user = await Employee.findOne({ email: email });
+        if (!user) return res.status(400).json({ msg: "Employee does not exist. " });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid credentials. " });

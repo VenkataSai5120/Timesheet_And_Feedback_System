@@ -1,11 +1,102 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, MenuItem } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
+import { useState } from "react";
+
+const departments = [
+  {
+    name: "Development/Engineering",
+    roles: [
+      "Software Engineer",
+      "Frontend Developer",
+      "Backend Developer",
+      "Full-stack Developer",
+      "DevOps Engineer",
+    ],
+  },
+  {
+    name: "Quality Assurance/Testing",
+    roles: [
+      "QA Engineer",
+      "Automation Engineer",
+      "Manual Tester",
+      "Test Analyst",
+    ],
+  },
+  {
+    name: "Product Management",
+    roles: ["Product Manager", "Product Owner", "Business Analyst"],
+  },
+  {
+    name: "Design/User Experience (UX)",
+    roles: ["UX Designer", "UI Designer", "Interaction Designer", "Visual Designer"],
+  },
+  {
+    name: "Technical Support",
+    roles: [
+      "Technical Support Engineer",
+      "Customer Support Specialist",
+      "Helpdesk Technician",
+    ],
+  },
+  {
+    name: "Sales/Business Development",
+    roles: [
+      "Sales Representative",
+      "Account Executive",
+      "Business Development Manager",
+    ],
+  },
+  {
+    name: "Marketing",
+    roles: ["Marketing Manager", "Content Writer", "SEO Specialist", "Social Media Manager"],
+  },
+  {
+    name: "Human Resources",
+    roles: ["HR Manager", "Recruiter", "HR Generalist"],
+  },
+  {
+    name: "Finance/Accounting",
+    roles: ["Accountant", "Financial Analyst", "Controller"],
+  },
+  {
+    name: "Legal/Compliance",
+    roles: ["Legal Counsel", "Compliance Officer"],
+  },
+  {
+    name: "Operations/Infrastructure",
+    roles: ["Operations Manager", "Systems Administrator", "Network Engineer"],
+  },
+  {
+    name: "Research and Development (R&D)",
+    roles: ["Research Scientist", "R&D Engineer"],
+  },
+  {
+    name: "Customer Success/Client Services",
+    roles: ["Customer Success Manager", "Client Services Representative"],
+  },
+  {
+    name: "Project Management",
+    roles: ["Project Manager", "Scrum Master"],
+  },
+  {
+    name: "IT/Administration",
+    roles: ["IT Administrator", "Office Administrator"],
+  },
+];
 
 const Form = () => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const [filteredRoles, setFilteredRoles] = useState([]);
+
+  const handleDepartmentChange = (departmentName) => {
+    const selectedDepartment = departments.find(
+      (dept) => dept.name === departmentName
+    );
+    setFilteredRoles(selectedDepartment?.roles || []);
+  };
 
   const register = async (values, { resetForm }) => {
     try {
@@ -67,6 +158,7 @@ const Form = () => {
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.firstName}
+                color= "secondary"
                 name="firstName"
                 error={!!touched.firstName && !!errors.firstName}
                 helperText={touched.firstName && errors.firstName}
@@ -77,6 +169,7 @@ const Form = () => {
                 variant="filled"
                 type="text"
                 label="Last Name"
+                color= "secondary"
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.lastName}
@@ -86,12 +179,54 @@ const Form = () => {
                 sx={{ gridColumn: "span 2" }}
               />
               <TextField
+                select
+                fullWidth
+                variant="filled"
+                label="Department"
+                color= "secondary"
+                value={values.department}
+                onChange={(e) => {
+                  handleChange(e);
+                  handleDepartmentChange(e.target.value);
+                }}
+                name="department"
+                error={!!touched.department && !!errors.department}
+                helperText={touched.department && errors.department}
+                sx={{ gridColumn: "span 4" }}
+              >
+                {departments.map((dept) => (
+                  <MenuItem key={dept.name} value={dept.name}>
+                    {dept.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                fullWidth
+                variant="filled"
+                label="Role"
+                value={values.role}
+                color= "secondary"
+                onChange={handleChange}
+                name="role"
+                error={!!touched.role && !!errors.role}
+                helperText={touched.role && errors.role}
+                sx={{ gridColumn: "span 4" }}
+              >
+                {filteredRoles.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
                 fullWidth
                 variant="filled"
                 type="text"
                 label="Email"
                 onBlur={handleBlur}
                 onChange={handleChange}
+                color= "secondary"
                 value={values.email}
                 name="email"
                 error={!!touched.email && !!errors.email}
@@ -105,6 +240,7 @@ const Form = () => {
                 label="Contact Number"
                 onBlur={handleBlur}
                 onChange={handleChange}
+                color= "secondary"
                 value={values.contact}
                 name="contact"
                 error={!!touched.contact && !!errors.contact}
@@ -119,6 +255,7 @@ const Form = () => {
                 onBlur={handleBlur}
                 onChange={handleChange}
                 value={values.password}
+                color= "secondary"
                 name="password"
                 error={!!touched.password && !!errors.password}
                 helperText={touched.password && errors.password}
@@ -142,13 +279,15 @@ const phoneRegExp =
 
 const checkoutSchema = yup.object().shape({
   firstName: yup.string().required("required"),
-  lastName: yup.string().required("required"),
+  lastName: yup.string(),
   email: yup.string().email("invalid email").required("required"),
   contact: yup
     .string()
     .matches(phoneRegExp, "Phone number is not valid")
     .required("required"),
   password: yup.string().required("required"),
+  department: yup.string().required("required"),
+  role: yup.string().required("required"),
 });
 
 const initialValues = {
@@ -156,7 +295,9 @@ const initialValues = {
   lastName: "",
   email: "",
   contact: "",
-  password: "", 
+  password: "",
+  department: "",
+  role: "",
 };
 
 export default Form;

@@ -1,10 +1,10 @@
-const User = require("../models/User.js");
+const Employee = require("../models/Employee.js");
 const nodemailer = require('nodemailer');
 
 const check = async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findOne({ email: email });
+        const user = await Employee.findOne({ email: email });
         console.log(user);
         console.log(user._id);
         if (user) {
@@ -39,7 +39,7 @@ const check = async (req, res) => {
                 `
             };
     
-            transporter.sendMail(mailOptions, function (error, info) {
+            await transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     console.log(error);
                     res.status(500).json({ message: "Error sending email, Please try again!" });
@@ -50,7 +50,7 @@ const check = async (req, res) => {
 
             res.status(200).json(user);
         } else {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ message: "Employee not found" });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });

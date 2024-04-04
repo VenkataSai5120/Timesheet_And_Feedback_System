@@ -14,7 +14,7 @@ const LoginPage = () => {
   return (
     <Box
       display="flex"
-      flexDirection="column" // Adjusting to column layout for better alignment
+      flexDirection="column"
       justifyContent="center"
       alignItems="center"
       height="100vh"
