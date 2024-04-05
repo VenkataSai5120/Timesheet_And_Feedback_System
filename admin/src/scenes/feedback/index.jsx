@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
   Box,
   Button,
-  Checkbox,
-  FormControlLabel,
   MenuItem,
   Select,
   TextField,
 } from "@mui/material";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from "../../components/Header";
 
 // Dummy data for roles and employees
@@ -34,15 +34,23 @@ const dummyEmployees = {
 };
 
 const CreateQuestionsPage = () => {
-  const [questions, setQuestions] = useState([{ question: "", roles: [], employees: [] }]);
+  const [questions, setQuestions] = useState([{ question: "" }]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
 
   // Add a new question
-  const addQuestion = () => {
-    setQuestions([...questions, { question: "", roles: [], employees: [] }]);
+  const addQuestion = (index) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions.splice(index + 1, 0, { question: "" });
+    setQuestions(updatedQuestions);
   };
 
   // Delete a question
   const deleteQuestion = (index) => {
+    if (questions.length === 1) {
+      // Ensure at least one question is present
+      return;
+    }
     const updatedQuestions = [...questions];
     updatedQuestions.splice(index, 1);
     setQuestions(updatedQuestions);
@@ -56,44 +64,56 @@ const CreateQuestionsPage = () => {
   };
 
   // Handle role selection
-  const handleRoleSelect = (index, event) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index].roles = event.target.value;
-    setQuestions(updatedQuestions);
+  const handleRoleSelect = (event) => {
+    setSelectedRoles(event.target.value);
   };
 
   // Handle employee selection
-  const handleEmployeeSelect = (index, event) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index].employees = event.target.value;
-    setQuestions(updatedQuestions);
+  const handleEmployeeSelect = (event) => {
+    setSelectedEmployees(event.target.value);
   };
 
-  // Handle employee checkbox selection
-const handleEmployeeCheckbox = (questionIndex, event, employee) => {
-  const isChecked = event.target.checked;
-  const updatedQuestions = [...questions];
-  const updatedEmployees = [...updatedQuestions[questionIndex].employees];
+  // Submit the questions along with selected roles and employees
+  const handleSubmit = async ({ resetForm }) => {
+    if (questions.some(q => q.question.trim() === '') || selectedRoles.length === 0 || selectedEmployees.length === 0) {
+      // Display toast message if any input is empty
+      toast.error('Please fill in all fields');
+    } else {
+      // Construct data to send to the backend
+      const data = {
+        questions: questions.map(question => question.question),
+        selectedRoles: selectedRoles,
+        selectedEmployees: selectedEmployees
+      };
 
-  if (isChecked) {
-    updatedEmployees.push(employee);
-  } else {
-    const employeeIndex = updatedEmployees.indexOf(employee);
-    if (employeeIndex !== -1) {
-      updatedEmployees.splice(employeeIndex, 1);
+      console.log(data);
+  
+      try {
+        const savedUserResponse = await fetch(
+          "http://localhost:6001/auth/register",
+          {
+            method: "POST",
+            body: JSON.stringify(data), 
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const savedUser = await savedUserResponse.json();
+        console.log(savedUser);
+        resetForm();
+  
+      } catch (error) {
+        console.error("Error registering user:", error);
+      }
     }
-  }
-
-  updatedQuestions[questionIndex].employees = updatedEmployees;
-  setQuestions(updatedQuestions);
-};
-
-
+  };
+  
   return (
     <Box m="20px">
       <Header title="Feedback Questions" subtitle="Quest for Clarity: Spark the Conversation with a Question!" />
       {questions.map((q, index) => (
-        <Box key={index} display="flex" alignItems="center">
+        <Box key={index} display="flex" alignItems="center" marginBottom="10px">
           <TextField
             label={`Question ${index + 1}`}
             value={q.question}
@@ -103,96 +123,64 @@ const handleEmployeeCheckbox = (questionIndex, event, employee) => {
             fullWidth
             margin="normal"
           />
-          <Select
-            multiple
-            value={q.roles}
-            onChange={(event) => handleRoleSelect(index, event)}
-            displayEmpty
-            variant="outlined"
-            color="secondary"
-            fullWidth
-            margin="normal"
-            sx={{ marginLeft: "10px" }}
-            renderValue={(selected) => renderSelectedCount(selected, departments.reduce((acc, dept) => acc.concat(dept.roles), []).length)}
-          >
-            <MenuItem value="" disabled>
-              Select Role
-            </MenuItem>
-            {departments.map((dept) =>
-              dept.roles.map((role, idx) => (
-                <MenuItem key={idx} value={role}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={q.roles.indexOf(role) > -1}
-                        color="secondary"
-                      />
-                    }
-                    label={role}
-                  />
-                </MenuItem>
-              ))
-            )}
-          </Select>
-          <Select
-  multiple
-  value={q.employees}
-  onChange={(event) => handleEmployeeSelect(index, event)}
-  displayEmpty
-  variant="outlined"
-  color="secondary"
-  fullWidth
-  margin="normal"
-  sx={{ marginLeft: "10px" }}
-  renderValue={(selected) => renderSelectedCount(selected, (dummyEmployees[q.roles[0]] || []).length)}
->
-  <MenuItem value="" disabled>
-    Select Employee
-  </MenuItem>
-  {q.roles.map((role) => (
-    <div key={role}>
-      <MenuItem disabled>{role}</MenuItem>
-      {(dummyEmployees[role] || []).map((employee, idx) => (
-        <MenuItem key={idx} value={employee}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={q.employees.indexOf(employee) > -1}
-                onChange={(event) => handleEmployeeCheckbox(index, event, employee)}
-                color="secondary"
-              />
-            }
-            label={employee}
-          />
-        </MenuItem>
-      ))}
-    </div>
-  ))}
-</Select>
-
-          <Button onClick={addQuestion} color="secondary" variant="outlined" sx={{ marginLeft: "10px" }}>
-            +
-          </Button>
-          {questions.length > 1 && (
-            <Button
-              onClick={() => deleteQuestion(index)}
-              color="secondary"
-              variant="outlined"
-              sx={{ marginLeft: "10px" }}
-            >
-              -
-            </Button>
+          {index === questions.length - 1 && (
+            <Button onClick={() => addQuestion(index)} variant="outlined" color="secondary" style={{ marginLeft: "10px" }}>+</Button>
+          )}
+          {index !== 0 && (
+            <Button onClick={() => deleteQuestion(index)} variant="outlined" color="secondary" style={{ marginLeft: "10px" }}>-</Button>
           )}
         </Box>
       ))}
+      <Box display="flex" alignItems="center" marginBottom="10px">
+        <Select
+          multiple
+          value={selectedRoles}
+          onChange={handleRoleSelect}
+          displayEmpty
+          variant="outlined"
+          color="secondary"
+          fullWidth
+          margin="normal"
+          style={{ marginRight: "10px" }}
+        >
+          <MenuItem value="" disabled>
+            Select Role
+          </MenuItem>
+          {departments.map((dept) =>
+            dept.roles.map((role, idx) => (
+              <MenuItem key={idx} value={role}>
+                {role}
+              </MenuItem>
+            ))
+          )}
+        </Select>
+        <Select
+          multiple
+          value={selectedEmployees}
+          onChange={handleEmployeeSelect}
+          variant="outlined"
+          color="secondary"
+          fullWidth
+          margin="normal"
+        >
+          <MenuItem value="" disabled>
+            Select Employee
+          </MenuItem>
+          {selectedRoles.map((role) => (dummyEmployees[role] || []).map((employee, idx) => (
+            <MenuItem key={idx} value={employee}>
+              {employee}
+            </MenuItem>
+          )))}
+        </Select>
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <Button onClick={handleSubmit} color="secondary" variant="contained">
+          Submit
+        </Button>
+      </Box>
+      <ToastContainer />
     </Box>
   );
 };
-
-const renderSelectedCount = (selected) => {
-  return `${selected.length}`;
-};
-
-
 
 export default CreateQuestionsPage;
