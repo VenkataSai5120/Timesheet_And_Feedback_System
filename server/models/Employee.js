@@ -30,7 +30,6 @@ const employeeSchema = new mongoose.Schema({
   contact: {
     type: Number,
     required: true,
-    unique: true,
   },
   password: { 
     type: String, 

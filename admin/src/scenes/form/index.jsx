@@ -4,6 +4,8 @@ import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { useState } from "react";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const departments = [
   {
@@ -111,6 +113,13 @@ const Form = () => {
         }
       );
       const savedUser = await savedUserResponse.json();
+      if (savedUserResponse.status === 200) {
+        toast.success('User created successfully!');
+      } else if (savedUserResponse.status === 400) {
+          toast.error('Email ID already exists!');
+      } else {
+          toast.error('Please try again after some time.');
+      }
       console.log(savedUser);
       resetForm();
 
@@ -270,6 +279,7 @@ const Form = () => {
           </form>
         )}
       </Formik>
+      <ToastContainer />
     </Box>
   );
 };

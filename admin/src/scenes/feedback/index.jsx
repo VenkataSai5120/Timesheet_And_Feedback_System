@@ -73,8 +73,15 @@ const CreateQuestionsPage = () => {
     setSelectedEmployees(event.target.value);
   };
 
+  // Reset form
+  const resetForm = () => {
+    setQuestions([{ question: "" }]);
+    setSelectedRoles([]);
+    setSelectedEmployees([]);
+  };
+
   // Submit the questions along with selected roles and employees
-  const handleSubmit = async ({ resetForm }) => {
+  const handleSubmit = async () => {
     if (questions.some(q => q.question.trim() === '') || selectedRoles.length === 0 || selectedEmployees.length === 0) {
       // Display toast message if any input is empty
       toast.error('Please fill in all fields');
@@ -90,7 +97,7 @@ const CreateQuestionsPage = () => {
   
       try {
         const savedUserResponse = await fetch(
-          "http://localhost:6001/auth/register",
+          "http://localhost:6001/save/questions",
           {
             method: "POST",
             body: JSON.stringify(data), 
@@ -101,9 +108,13 @@ const CreateQuestionsPage = () => {
         );
         const savedUser = await savedUserResponse.json();
         console.log(savedUser);
+        if (savedUserResponse.ok) {
+          toast.success('Feedback questions saved successfully');
+        }
         resetForm();
   
       } catch (error) {
+        toast.error('please try again!');
         console.error("Error registering user:", error);
       }
     }
