@@ -105,7 +105,7 @@ const Sidebar = () => {
                   Venkata Sai
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Administrator
+                  Employee
                 </Typography>
               </Box>
             </Box>
@@ -136,7 +136,7 @@ const Sidebar = () => {
             />
             <Item
               title="Feedback"
-              to="/feedback"
+              to="/feedback-response"
               icon={<RateReviewIcon />}
               selected={selected}
               setSelected={setSelected}

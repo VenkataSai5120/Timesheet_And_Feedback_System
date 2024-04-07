@@ -3,6 +3,7 @@ import ResetPassword from "./scenes/resetPassword";
 import ForgotPassword from "./scenes/forgotPassword";
 import LoginPage from "./scenes/loginPage";
 import HomePage from "./scenes/homePage";
+import FeedbackResponse from "./scenes/feedbackResponse";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Topbar from "./scenes/global/Topbar";
@@ -27,6 +28,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/feedback-response" element={<FeedbackResponse />} />
             </Routes>
           </main>
         </div>
