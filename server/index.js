@@ -6,6 +6,7 @@ const authRoute = require("./routes/auth.js");
 const findRoute = require("./routes/find.js");
 const resetRoute = require("./routes/reset.js");
 const questionsRoute = require("./routes/questions.js");
+const projectsRoute = require("./routes/project.js");
 const cors = require('cors');
 const bodyparser = require("body-parser");
 
@@ -24,6 +25,7 @@ app.use("/auth", authRoute);
 app.use("/find", findRoute);
 app.use("/reset", resetRoute);
 app.use("/save", questionsRoute);
+app.use("/save", projectsRoute);
 const PORT = process.env.PORT;
 
 mongoose

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const autoIncrement = require('mongoose-auto-increment');
 
 const projectSchema = new mongoose.Schema({
     projectID: {
@@ -20,14 +19,15 @@ const projectSchema = new mongoose.Schema({
     endDate: {
         type: Date,
         required: true
-    }
-});
-
-projectSchema.plugin(autoIncrement.plugin, {
-    model: 'Project',
-    field: 'projectID',
-    startAt: 1000,
-    incrementBy: 1
+    },
+    projectManager: {
+        type: String,
+        required: true
+    },
+    projectMembers: {
+        type: Array,
+        required: true
+    },
 });
 
 const Project = mongoose.model('Project', projectSchema);

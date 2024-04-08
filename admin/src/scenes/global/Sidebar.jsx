@@ -13,6 +13,7 @@ import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -162,6 +163,13 @@ const Sidebar = () => {
               title="Create Feedback"
               to="/feedback"
               icon={<RateReviewOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            <Item
+              title="Create Project"
+              to="/project"
+              icon={<AccountTreeOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
             />

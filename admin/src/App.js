@@ -7,6 +7,7 @@ import Team from "./scenes/team";
 import Contacts from "./scenes/contacts";
 import FAQ from "./scenes/faq";
 import Form from "./scenes/form";
+import CreateProject from "./scenes/createProject";
 import CreateQuestionPage from "./scenes/feedback";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
@@ -26,6 +27,7 @@ function App() {
             <Topbar setIsSidebar={setIsSidebar} />
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/project" element={<CreateProject />} />
               <Route path="/team" element={<Team />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/form" element={<Form />} />

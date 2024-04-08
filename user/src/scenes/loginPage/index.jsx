@@ -4,24 +4,44 @@ import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 const LoginForm = () => {
   const navigate = useNavigate(); // Hook to access navigation
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const resetPassword = async (values, { resetForm }) => {
+  const loginProcess = async (values, { resetForm }) => {
     try {
       // Logic to reset password goes here
-      console.log("Resetting password with values:", values);
+      const response = await fetch(
+        "http://localhost:6001/auth/login",
+        {
+          method: "POST",
+          body: JSON.stringify(values),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.status === 200) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        toast.success("Logged in successfully");
+        navigate("/home");
+      } 
       resetForm();
     } catch (error) {
-      console.error("Error resetting password:", error);
+      toast.error("Error logging in");
+      console.error("Error logging in:", error);
+      resetForm();
     }
   };
 
+
   const handleFormSubmit = (values, { resetForm }) => {
-    resetPassword(values, { resetForm });
+    loginProcess(values, { resetForm });
     navigate("/home"); // Navigate to the login page
   };
 
@@ -58,17 +78,17 @@ LOGIN CREDENTIALS" subtitle="Unlock Your Digital World!" />
                 }}
               >
                 <TextField
-                    fullWidth
-                    variant="filled"
-                    type="text"
-                    label="Email"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.email}
-                    name="email"
-                    error={!!touched.email && !!errors.email}
-                    helperText={touched.email && errors.email}
-                    sx={{ gridColumn: "span 4" }}
+                  fullWidth
+                  variant="filled"
+                  type="text"
+                  label="Email"
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  value={values.email}
+                  name="email"
+                  error={!!touched.email && !!errors.email}
+                  helperText={touched.email && errors.email}
+                  sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
                   fullWidth
@@ -103,8 +123,8 @@ LOGIN CREDENTIALS" subtitle="Unlock Your Digital World!" />
 };
 
 const resetPasswordSchema = yup.object().shape({
-    email: yup.string().email("invalid email").required("required"),
-    password: yup.string().required("required"),
+  email: yup.string().email("invalid email").required("required"),
+  password: yup.string().required("required"),
 });
 
 const initialValues = {
@@ -113,6 +133,14 @@ const initialValues = {
 };
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem("user");
+    if (loggedInUser) {
+      navigate("/home");
+    }
+  }, [navigate]);
+
   return (
     <Box
       display="flex"
