@@ -22,9 +22,10 @@ const register = async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
+        const projectCount = await Employee.countDocuments() + 100000;
 
         const newUser = new Employee({
-            ID: id,
+            ID: projectCount,
             firstName,
             lastName,
             department,
@@ -82,27 +83,6 @@ const register = async (req, res) => {
         }
         res.status(500).json({ error: err.message });
     }
-};
-
-const generateID = (department, role, contact, email) => {
-    const timestamp = new Date();
-    // Extracting components from the timestamp
-    const hour = timestamp.getHours().toString().padStart(2, '0');
-    const minute = timestamp.getMinutes().toString().padStart(2, '0');
-    const second = timestamp.getSeconds().toString().padStart(2, '0');
-    const day = timestamp.getDate().toString().padStart(2, '0');
-    const month = (timestamp.getMonth() + 1).toString().padStart(2, '0'); // Month is zero-indexed
-    const year = timestamp.getFullYear().toString().slice(-2);
-
-    // Extracting individual characters
-    const deptChar = department.charAt(0);
-    const roleChar = role.charAt(0);
-    const contactChar = contact.toString().charAt(0);
-    const emailChar = email.charAt(0);
-
-    // Generating the ID using relevant components
-    const id = `${deptChar}${roleChar}${contactChar}${emailChar}${hour}${minute}${second}${day}${month}${year}`;
-    return id;
 };
 
 
