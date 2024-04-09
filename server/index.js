@@ -9,6 +9,10 @@ const questionsRoute = require("./routes/questions.js");
 const projectsRoute = require("./routes/project.js");
 const cors = require('cors');
 const bodyparser = require("body-parser");
+const Employee = require("./models/Employee.js");
+const employees = require("./data/index.js");
+
+console.log(employees);
 
 const app = express();
 dotenv.config();
@@ -32,5 +36,6 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+    Employee.insertMany(employees);
   })
   .catch((error) => console.log(`${error} did not connect`));

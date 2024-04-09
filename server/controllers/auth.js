@@ -20,8 +20,8 @@ const register = async (req, res) => {
 
         console.log(req.body);
 
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
+        // const salt = await bcrypt.genSalt(10);
+        // const passwordHash = await bcrypt.hash(password, salt);
         const projectCount = await Employee.countDocuments() + 100000;
 
         const newUser = new Employee({
@@ -32,7 +32,7 @@ const register = async (req, res) => {
             role,
             email,
             contact,
-            password: passwordHash,
+            password,
         });
         console.log("creating user");
         const savedUser = await newUser.save();
