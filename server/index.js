@@ -7,16 +7,13 @@ const findRoute = require("./routes/find.js");
 const resetRoute = require("./routes/reset.js");
 const questionsRoute = require("./routes/questions.js");
 const projectsRoute = require("./routes/project.js");
+const fetchProjectsRoute = require("./routes/fetchProjects.js");
+const fetchMappingsRoute = require("./routes/fetchMappings.js");
 const cors = require('cors');
 const bodyparser = require("body-parser");
-const Employee = require("./models/Employee.js");
-const employees = require("./data/index.js");
-
-console.log(employees);
 
 const app = express();
 dotenv.config();
-
 
 app.use(express.json());
 app.use(cors());
@@ -30,12 +27,14 @@ app.use("/find", findRoute);
 app.use("/reset", resetRoute);
 app.use("/save", questionsRoute);
 app.use("/save", projectsRoute);
-const PORT = process.env.PORT;
+app.use("/fetch", fetchProjectsRoute);
+app.use("/fetch", fetchMappingsRoute);
+
+const PORT = process.env.PORT || 5001;
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
-    Employee.insertMany(employees);
   })
   .catch((error) => console.log(`${error} did not connect`));

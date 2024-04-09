@@ -5,9 +5,16 @@ const saveFeedback = async (req, res) => {
         console.log("Got a request");
         console.log(req.body);
         const { questions, selectedRoles, selectedEmployees } = req.body;
+        const employees = [];
+
+        for (const role in selectedEmployees) {
+            selectedEmployees[role].forEach(name => {
+                employees.push(name);
+            });
+        }
         const newFeedbackQuestions = new FeedbackQuestions({
             questions: questions,
-            employees: selectedEmployees,
+            employees: employees,
         });
 
         await newFeedbackQuestions.save();

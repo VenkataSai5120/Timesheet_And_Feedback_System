@@ -1,54 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
   MenuItem,
   Select,
   TextField,
+  FormControl,
+  InputLabel,
+  Typography,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  IconButton,
 } from "@mui/material";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from "../../components/Header";
 
-// Dummy data for roles and employees
-const departments = [
-  {
-    name: "Development/Engineering",
-    roles: [
-      "Software Engineer",
-      "Frontend Developer",
-      "Backend Developer",
-      "Full-stack Developer",
-      "DevOps Engineer",
-    ],
-  },
-  {
-    name: "Quality Assurance/Testing",
-    roles: ["QA Engineer", "Automation Engineer", "Manual Tester", "Test Analyst"],
-  },
-];
-
-const dummyEmployees = {
-  "Software Engineer": ["John Doe", "Jane Smith"],
-  "QA Engineer": ["Alice Johnson", "Bob Brown"],
-};
-
 const CreateQuestionsPage = () => {
   const [questions, setQuestions] = useState([{ question: "" }]);
-  const [selectedRoles, setSelectedRoles] = useState([]);
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedEmployees, setSelectedEmployees] = useState({});
+  const [dummyRoles, setDummyRoles] = useState([]);
+  const [dummyEmployees, setDummyEmployees] = useState({});
 
-  // Add a new question
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch("http://localhost:6001/fetch/projects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const projectsData = await response.json();
+
+          const tempRoles = [];
+          const tempEmployees = {};
+
+          projectsData.forEach(project => {
+            tempRoles.push(project.projectName);
+            tempEmployees[project.projectName] = project.projectMembers;
+          });
+
+          setDummyRoles(tempRoles);
+          setDummyEmployees(tempEmployees);
+        } else {
+          throw new Error("Failed to fetch projects");
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        // Handle error, show toast, etc.
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   const addQuestion = (index) => {
     const updatedQuestions = [...questions];
     updatedQuestions.splice(index + 1, 0, { question: "" });
     setQuestions(updatedQuestions);
   };
 
-  // Delete a question
   const deleteQuestion = (index) => {
     if (questions.length === 1) {
-      // Ensure at least one question is present
       return;
     }
     const updatedQuestions = [...questions];
@@ -56,70 +78,77 @@ const CreateQuestionsPage = () => {
     setQuestions(updatedQuestions);
   };
 
-  // Update question text
   const handleQuestionChange = (index, event) => {
     const updatedQuestions = [...questions];
     updatedQuestions[index].question = event.target.value;
     setQuestions(updatedQuestions);
   };
 
-  // Handle role selection
   const handleRoleSelect = (event) => {
-    setSelectedRoles(event.target.value);
+    const role = event.target.value;
+    setSelectedRole(role);
+    setSelectedEmployees({
+      ...selectedEmployees,
+      [role]: selectedEmployees[role] || [],
+    });
   };
 
-  // Handle employee selection
-  const handleEmployeeSelect = (event) => {
-    setSelectedEmployees(event.target.value);
+  const handleEmployeeChange = (employees) => {
+    setSelectedEmployees({
+      ...selectedEmployees,
+      [selectedRole]: employees,
+    });
   };
 
-  // Reset form
   const resetForm = () => {
     setQuestions([{ question: "" }]);
-    setSelectedRoles([]);
-    setSelectedEmployees([]);
+    setSelectedRole("");
+    setSelectedEmployees({});
   };
 
-  // Submit the questions along with selected roles and employees
   const handleSubmit = async () => {
-    if (questions.some(q => q.question.trim() === '') || selectedRoles.length === 0 || selectedEmployees.length === 0) {
-      // Display toast message if any input is empty
-      toast.error('Please fill in all fields');
+    if (
+      questions.some((q) => q.question.trim() === "") ||
+      !Object.keys(selectedEmployees).length
+    ) {
+      toast.error("Please fill in all fields");
     } else {
-      // Construct data to send to the backend
       const data = {
-        questions: questions.map(question => question.question),
-        selectedRoles: selectedRoles,
-        selectedEmployees: selectedEmployees
+        questions: questions.map((question) => question.question),
+        selectedEmployees: selectedEmployees,
       };
 
-      console.log(data);
-  
       try {
         const savedUserResponse = await fetch(
           "http://localhost:6001/save/questions",
           {
             method: "POST",
-            body: JSON.stringify(data), 
+            body: JSON.stringify(data),
             headers: {
               "Content-Type": "application/json",
             },
           }
         );
         const savedUser = await savedUserResponse.json();
-        console.log(savedUser);
         if (savedUserResponse.ok) {
-          toast.success('Feedback questions saved successfully');
+          toast.success("Feedback questions saved successfully");
         }
         resetForm();
-  
       } catch (error) {
-        toast.error('please try again!');
+        toast.error("Please try again!");
         console.error("Error registering user:", error);
       }
     }
   };
-  
+
+  const removeEmployee = (employee) => {
+    const updatedEmployees = selectedEmployees[selectedRole].filter(emp => emp !== employee);
+    setSelectedEmployees(prevState => ({
+      ...prevState,
+      [selectedRole]: updatedEmployees,
+    }));
+  };
+
   return (
     <Box m="20px">
       <Header title="Feedback Questions" subtitle="Quest for Clarity: Spark the Conversation with a Question!" />
@@ -142,52 +171,74 @@ const CreateQuestionsPage = () => {
           )}
         </Box>
       ))}
-      <Box display="flex" alignItems="center" marginBottom="10px">
-        <Select
-          multiple
-          value={selectedRoles}
-          onChange={handleRoleSelect}
-          displayEmpty
-          variant="outlined"
-          color="secondary"
-          fullWidth
-          margin="normal"
-          style={{ marginRight: "10px" }}
-        >
-          <MenuItem value="" disabled>
-            Select Role
-          </MenuItem>
-          {departments.map((dept) =>
-            dept.roles.map((role, idx) => (
-              <MenuItem key={idx} value={role}>
-                {role}
-              </MenuItem>
-            ))
-          )}
-        </Select>
-        <Select
-          multiple
-          value={selectedEmployees}
-          onChange={handleEmployeeSelect}
-          variant="outlined"
-          color="secondary"
-          fullWidth
-          margin="normal"
-        >
-          <MenuItem value="" disabled>
-            Select Employee
-          </MenuItem>
-          {selectedRoles.map((role) => (dummyEmployees[role] || []).map((employee, idx) => (
-            <MenuItem key={idx} value={employee}>
-              {employee}
-            </MenuItem>
-          )))}
-        </Select>
+      <Box mb={3}>
+        <FormControl fullWidth>
+          <InputLabel>Select Role</InputLabel>
+          <Select
+            value={selectedRole}
+            color="secondary"
+            onChange={handleRoleSelect}
+          >
+            <MenuItem value="" disabled>Select Role</MenuItem>
+            {dummyRoles.map((role, index) => (
+              <MenuItem key={index} value={role}>{role}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
+      {selectedRole && (
+        <Box mb={3}>
+          <FormControl fullWidth>
+            <InputLabel>Select Employees</InputLabel>
+            <Select
+              multiple
+              value={selectedEmployees[selectedRole] || []}
+              color="secondary"
+              onChange={(e) => handleEmployeeChange(e.target.value)}
+            >
+              {dummyEmployees[selectedRole]?.map((employee, index) => (
+                <MenuItem key={index} value={employee}>{employee}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
       <Box display="flex" justifyContent="center">
         <Button onClick={handleSubmit} color="secondary" variant="contained">
           Submit
         </Button>
+      </Box>
+      <Box mt={3}>
+        {Object.keys(selectedEmployees).map((role) => (
+          <Box key={role} mt={3}>
+            <Typography variant="h6" color="secondary">{role}</Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {selectedEmployees[role]?.map((employee, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{employee}</TableCell>
+                      <TableCell>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => removeEmployee(employee)}
+                        >
+                          Remove
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        ))}
       </Box>
       <ToastContainer />
     </Box>

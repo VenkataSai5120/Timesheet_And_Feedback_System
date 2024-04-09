@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const Employee = require("../models/Employee.js");
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,15}$/;
 const nodemailer = require("nodemailer");
+const Mapping = require("../models/Mapping.js");
 
 const register = async (req, res) => {
     try {
@@ -16,12 +17,10 @@ const register = async (req, res) => {
             role
         } = req.body;
 
-        const id = await generateID(department, role, contact, email);
-
         console.log(req.body);
 
-        // const salt = await bcrypt.genSalt(10);
-        // const passwordHash = await bcrypt.hash(password, salt);
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
         const projectCount = await Employee.countDocuments() + 100000;
 
         const newUser = new Employee({
@@ -34,9 +33,28 @@ const register = async (req, res) => {
             contact,
             password,
         });
+
         console.log("creating user");
         const savedUser = await newUser.save();
         console.log("Employee Registered Successfully");
+
+        // Check if role exists in mapping
+        console.log("checking role")
+        const existingMapping = await Mapping.findOne({ role });
+
+        if (existingMapping) {
+            existingMapping.employees.push(savedUser.ID);
+            console.log("updating mapping")
+            await existingMapping.save();
+        } else {
+            console.log("creating mapping")
+            const newMapping = new Mapping({
+                role,
+                employees: [savedUser.ID]
+            });
+            await newMapping.save();
+        }
+
         const loginURL = "http://localhost:3001/login";
 
         var transporter = nodemailer.createTransport({

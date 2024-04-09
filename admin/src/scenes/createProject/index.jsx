@@ -25,6 +25,7 @@ import * as yup from "yup";
 import Header from "../../components/Header";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
 
 const validationSchema = yup.object({
     projectName: yup.string().required("Project name is required"),
@@ -34,23 +35,9 @@ const validationSchema = yup.object({
     description: yup.string().required("Description is required"),
 });
 
-const dummyRoles = [
-    "Software Engineer",
-    "QA Engineer",
-    "Product Manager",
-    "UX Designer",
-    "Technical Support Engineer",
-    "Sales Representative",
-];
+const dummyRoles = [];
 
-const dummyEmployees = {
-    "Software Engineer": ["John Doe", "Alice Smith", "Bob Johnson"],
-    "QA Engineer": ["Emma Brown", "Michael Lee"],
-    "Product Manager": ["Sarah Clark", "David Wilson"],
-    "UX Designer": ["Olivia Taylor", "James Anderson"],
-    "Technical Support Engineer": ["Sophia Martinez", "William Thomas"],
-    "Sales Representative": ["Emily Garcia", "Daniel Hernandez"],
-};
+const dummyEmployees = {};
 
 const dummyProjectManagers = [
     "Project Manager 1",
@@ -61,6 +48,45 @@ const dummyProjectManagers = [
 const CreateProjectForm = () => {
     const [selectedRole, setSelectedRole] = useState("");
     const [selectedEmployees, setSelectedEmployees] = useState({});
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+          try {
+            const response = await fetch("http://localhost:6001/fetch/mappings", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+       
+            if (response.ok) {
+              const projectsData = await response.json();
+              console.log(projectsData)
+      
+              // Push project names into projects1 array
+              projectsData.forEach(project => {
+                dummyRoles.push(project.role);
+                
+                // Map project names to employees
+                dummyEmployees[project.role] = project.employees;
+              });
+    
+              console.log(dummyRoles);
+              console.log(dummyEmployees);
+              
+              // Update state to trigger re-rendering
+              // setProjects([...projectsData.map(project => project.projectName)]);
+            } else {
+              throw new Error("Failed to fetch projects");
+            }
+          } catch (error) {
+            console.error("Error fetching projects:", error);
+            // Handle error, show toast, etc.
+          }
+        };
+      
+        fetchProjects();
+      }, []);
 
     const handleRoleChange = (role) => {
         setSelectedRole(role);
