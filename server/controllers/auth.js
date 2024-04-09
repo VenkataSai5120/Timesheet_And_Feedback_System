@@ -31,7 +31,7 @@ const register = async (req, res) => {
             role,
             email,
             contact,
-            password,
+            password: passwordHash,
         });
 
         console.log("creating user");
