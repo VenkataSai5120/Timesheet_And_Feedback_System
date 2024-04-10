@@ -9,6 +9,7 @@ const questionsRoute = require("./routes/questions.js");
 const projectsRoute = require("./routes/project.js");
 const fetchProjectsRoute = require("./routes/fetchProjects.js");
 const fetchMappingsRoute = require("./routes/fetchMappings.js");
+const fetchEmployeesRoute = require("./routes/fetchEmployees.js");
 const cors = require('cors');
 const bodyparser = require("body-parser");
 
@@ -29,6 +30,7 @@ app.use("/save", questionsRoute);
 app.use("/save", projectsRoute);
 app.use("/fetch", fetchProjectsRoute);
 app.use("/fetch", fetchMappingsRoute);
+app.use("/fetch", fetchEmployeesRoute);
 
 const PORT = process.env.PORT || 5001;
 

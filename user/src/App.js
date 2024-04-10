@@ -8,6 +8,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
+import TimeSheet from "./scenes/timesheet";
 import { useState } from "react";
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={<HomePage />} />
               <Route path="/home" element={<HomePage />} />
+              <Route path="/timesheet" element={<TimeSheet />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/feedback-response" element={<FeedbackResponse />} />
             </Routes>

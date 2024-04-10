@@ -130,6 +130,7 @@ const CreateQuestionsPage = () => {
           }
         );
         const savedUser = await savedUserResponse.json();
+        console.log(savedUser)
         if (savedUserResponse.ok) {
           toast.success("Feedback questions saved successfully");
         }

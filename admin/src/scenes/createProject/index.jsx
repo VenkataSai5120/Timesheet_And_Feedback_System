@@ -188,6 +188,7 @@ const CreateProjectForm = () => {
                                     onBlur={handleBlur}
                                     error={touched.fromDate && !!errors.fromDate}
                                     helperText={touched.fromDate && errors.fromDate}
+                                    sx={{ gridColumn: "span 2" }}
                                 />
                             </Box>
                             <Box>
@@ -204,6 +205,7 @@ const CreateProjectForm = () => {
                                     onBlur={handleBlur}
                                     error={touched.endDate && !!errors.endDate}
                                     helperText={touched.endDate && errors.endDate}
+                                    sx={{ gridColumn: "span 2" }}
                                 />
                             </Box>
                         </Box>
