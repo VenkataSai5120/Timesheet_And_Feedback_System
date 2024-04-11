@@ -57,9 +57,10 @@ const TimesheetTable = () => {
     }
   };
 
-  // Get the current date and generate dates for each day of the week
+  // Get the current date and generate dates for each day of the week starting from Monday
   const currentDate = new Date();
-  const weekdays = [...Array(7).keys()].map(i => addDays(currentDate, i));
+  const monday = addDays(currentDate, 1 - currentDate.getDay()); // Get Monday of the current week
+  const weekdays = [...Array(7).keys()].map(i => addDays(monday, i));
   const formattedWeekdays = weekdays.map(day => format(day, 'MM/dd/yyyy'));
 
   return (
