@@ -3,19 +3,10 @@ import { Box, useTheme, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
-import Backdrop from '@material-ui/core/Backdrop';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { makeStyles } from '@material-ui/core/styles';
+import Spinner from "../../components/Spinner";
 
-const useStyles = makeStyles((theme) => ({
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  },
-}));
 const Team = () => {
   const theme = useTheme();
-  const classes=useStyles();
   const colors = tokens(theme.palette.mode);
 
   // Define the columns
@@ -127,9 +118,7 @@ const Team = () => {
           },
         }}
       >
-        {data.length !== 0 ? <DataGrid checkboxSelection rows={data} columns={columns} /> : <Backdrop className={classes.backdrop} open>
-        <CircularProgress color="inherit" />
-      </Backdrop>}
+        {data.length !== 0 ? <DataGrid checkboxSelection rows={data} columns={columns} /> : <Spinner />}
       </Box>
     </Box>
   );

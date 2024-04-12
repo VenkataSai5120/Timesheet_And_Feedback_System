@@ -8,11 +8,22 @@ import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+import ExitToAppOutlinedIcon from "@mui/icons-material/ExitToAppOutlined"; // Added logout icon
+import { useNavigate } from "react-router-dom";
 
 const Topbar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
   const colorMode = useContext(ColorModeContext);
+
+  // Function to handle logout
+  const handleLogout = () => {
+    // Clear details from local storage
+    localStorage.removeItem("user"); // Replace "userDetails" with your specific key
+    // Redirect to login or perform other actions if needed
+    navigate("/login");
+  };
 
   return (
     <Box display="flex" justifyContent="space-between" p={2}>
@@ -45,6 +56,10 @@ const Topbar = () => {
         </IconButton>
         <IconButton>
           <PersonOutlinedIcon />
+        </IconButton>
+        {/* Logout Button */}
+        <IconButton onClick={handleLogout}>
+          <ExitToAppOutlinedIcon />
         </IconButton>
       </Box>
     </Box>

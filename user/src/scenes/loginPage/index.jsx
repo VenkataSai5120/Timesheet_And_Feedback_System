@@ -15,6 +15,7 @@ const LoginForm = () => {
   const loginProcess = async (values, { resetForm }) => {
     try {
       // Logic to reset password goes here
+      console.log(values);
       const response = await fetch(
         "http://localhost:6001/auth/login",
         {
@@ -28,6 +29,7 @@ const LoginForm = () => {
       const data = await response.json();
       if (response.status === 200) {
         localStorage.setItem('user', JSON.stringify(data.user));
+        console.log("Logged in successfully", data.user)
         toast.success("Logged in successfully");
         navigate("/home");
       } 

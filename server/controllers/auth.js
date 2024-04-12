@@ -107,16 +107,19 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log(req.body.email);
+        console.log(req.body.password);
         const user = await Employee.findOne({ email: email });
         if (!user) return res.status(400).json({ msg: "Employee does not exist. " });
-
+        console.log(1);
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid credentials. " });
-
+        console.log(2);
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
+        console.log(3);
         const userObject = user.toObject();
         delete userObject.password;
+        console.log(4);
 
         res.status(200).json({ token, user });
     } catch (err) {

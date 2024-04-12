@@ -174,13 +174,13 @@ const CreateQuestionsPage = () => {
       ))}
       <Box mb={3}>
         <FormControl fullWidth>
-          <InputLabel>Select Role</InputLabel>
+          <InputLabel>Select Project</InputLabel>
           <Select
             value={selectedRole}
             color="secondary"
             onChange={handleRoleSelect}
           >
-            <MenuItem value="" disabled>Select Role</MenuItem>
+            <MenuItem value="" disabled>Select Project</MenuItem>
             {dummyRoles.map((role, index) => (
               <MenuItem key={index} value={role}>{role}</MenuItem>
             ))}

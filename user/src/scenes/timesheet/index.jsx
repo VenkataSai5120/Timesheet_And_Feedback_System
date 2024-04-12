@@ -9,18 +9,50 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Button,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import Header from "../../components/Header";
 import RemoveIcon from "@mui/icons-material/Remove";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { format, addDays, subWeeks, addWeeks } from "date-fns"; // Import date-fns functions for date formatting and manipulation
+import { format, addDays, subWeeks, addWeeks } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Spinner from "../../components/Spinner";
 
 const dummyProjects = ["Project A", "Project B", "Project C"];
 const dummyTasks = ["Task 1", "Task 2", "Task 3"];
 
+const initialActivities = [
+  {
+    id: 1,
+    type: "BAU",
+    name: "",
+    task: "",
+    tasks: [""],
+    comment: "",
+    comments: [""],
+    hours: [0, 0, 0, 0, 0],
+    isRemovable: false,
+  },
+  {
+    id: 2,
+    type: "Sales",
+    name: "",
+    task: "",
+    tasks: [""],
+    comment: "",
+    comments: [""],
+    hours: [0, 0, 0, 0, 0],
+    isRemovable: false,
+  },
+];
+
 const TimesheetTable = () => {
+
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([
     {
       id: 1,
@@ -46,6 +78,20 @@ const TimesheetTable = () => {
     },
   ]);
   const [currentWeek, setCurrentWeek] = useState(new Date());
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      toast.error("Make Sure to login!");
+      navigate("/");
+    }
+    // Simulating loading delay
+    const timeoutId = setTimeout(() => {
+      setLoading(false); // Once data is loaded, set loading to false
+    }, 2000);
+ 
+    return () => clearTimeout(timeoutId); // Cleanup timeout on component unmount
+  }, [navigate]);
 
   useEffect(() => {
     const hasBAU = activities.some((activity) => activity.type === "BAU");
@@ -84,25 +130,23 @@ const TimesheetTable = () => {
 
   const removeActivity = (id) => {
     if (activities.length === 2) {
-      return; // Prevent removing the last BAU or Sales activity
+      return;
     }
     setActivities(activities.filter((activity) => activity.id !== id));
   };
 
   const handleHoursChange = (activityIndex, hourIndex, newValue) => {
-    // Check if the entered value is empty string
-    const updatedValue = newValue === "" ? 0 : newValue; // Set to 0 if the entered value is empty string
+    const updatedValue = newValue === "" ? 0 : newValue;
     const parsedValue = parseInt(updatedValue);
     if (!isNaN(parsedValue) && parsedValue >= 0 && parsedValue <= 24) {
       const newActivities = [...activities];
-      newActivities[activityIndex].hours[hourIndex] = parsedValue.toString(); // Convert the parsed value back to string
+      newActivities[activityIndex].hours[hourIndex] = parsedValue.toString();
       setActivities(newActivities);
     }
   };
 
-  // Get the current date and generate dates for each day of the week starting from Monday
-  const monday = addDays(currentWeek, 1 - currentWeek.getDay()); // Get Monday of the current week
-  const weekdays = [...Array(5).keys()].map((i) => addDays(monday, i)); // Excluding Saturday and Sunday
+  const monday = addDays(currentWeek, 1 - currentWeek.getDay());
+  const weekdays = [...Array(5).keys()].map((i) => addDays(monday, i));
   const formattedWeekdays = weekdays.map((day) => format(day, "MM/dd/yyyy"));
 
   const goToPreviousWeek = () => {
@@ -113,15 +157,78 @@ const TimesheetTable = () => {
     setCurrentWeek(addWeeks(currentWeek, 1));
   };
 
+  const getTotalHoursPerDay = (index) => {
+    return activities.reduce(
+      (total, activity) => total + parseInt(activity.hours[index]),
+      0
+    );
+  };
+
+  const getTotalHours = () => {
+    return weekdays.map((day, index) => getTotalHoursPerDay(index));
+  };
+
+  const getTotalHoursTotal = () => {
+    return getTotalHours().reduce((total, hours) => total + hours, 0);
+  };
+
+  const resetActivities = () => {
+    setActivities(initialActivities);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      // Extracting required data
+      const user = localStorage.getItem("user");
+      console.log(user);
+      const employeeID = JSON.parse(user).ID;
+      const timesheetData = {
+        employeeID: employeeID,
+        activities: activities.map((activity) => ({
+          type: activity.type,
+          name: activity.name,
+          task: activity.task,
+          comment: activity.comment,
+          hours: activity.hours,
+          totalHours: activity.hours.reduce((acc, cur) => acc + parseInt(cur), 0),
+        })),
+        dates: formattedWeekdays,
+        totalHoursPerDay: getTotalHours(),
+        totalHoursPerWeek: getTotalHoursTotal(),
+      };
+
+      console.log("Sending data to backend:", timesheetData);
+      const savedTimesheetResponse = await fetch(
+        "http://localhost:6001/save/timesheet",
+        {
+          method: "POST",
+          body: JSON.stringify(timesheetData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(savedTimesheetResponse)
+      resetActivities();
+      // Replace console.log with your API call to send data to the backend
+    }
+    catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <Box
       mt={2}
       sx={{
         "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
         "& th, & td": { fontWeight: "bold", color: "secondary.main" },
-        "& th:nth-child(n+5), & td:nth-child(n+5)": { width: "10%" }, // Wider weekday cells
-        "& th:nth-child(2), & td:nth-child(2), & th:nth-child(3), & td:nth-child(3)":
-          { width: "15%" }, // Fixed width for project name and task columns
+        "& th:nth-of-type(n+5), & td:nth-of-type(n+5)": { width: "10%" },
+        "& th:nth-of-type(2), & td:nth-of-type(2), & th:nth-of-type(3), & td:nth-of-type(3)":
+          { width: "15%" },
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
       }}
     >
       <Header
@@ -153,7 +260,7 @@ const TimesheetTable = () => {
             {weekdays.map((day, index) => (
               <TableCell key={index}>
                 <div>{format(day, "MM/dd/yyyy")}</div>
-                <div>{format(day, "EEE")}</div> {/* Use short weekday names */}
+                <div>{format(day, "EEE")}</div>
               </TableCell>
             ))}
             <TableCell width="20%">Total Hours</TableCell>
@@ -237,7 +344,10 @@ const TimesheetTable = () => {
                 </TableCell>
               ))}
               <TableCell>
-                {activity.hours.reduce((acc, cur) => acc + parseInt(cur), 0)}
+                {activity.hours.reduce(
+                  (acc, cur) => acc + parseInt(cur),
+                  0
+                )}
               </TableCell>
               <TableCell>
                 {activity.isRemovable && (
@@ -251,8 +361,20 @@ const TimesheetTable = () => {
               </TableCell>
             </TableRow>
           ))}
+          <TableRow>
+            <TableCell colSpan={4}>Total</TableCell>
+            {getTotalHours().map((total, index) => (
+              <TableCell key={index}>{total}</TableCell>
+            ))}
+            <TableCell>{getTotalHoursTotal()}</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
+      <Box sx={{ alignSelf: "center", margin: "20px 0" }}>
+        <Button variant="contained" color="secondary" onClick={handleSubmit}>
+          Submit
+        </Button>
+      </Box>
     </Box>
   );
 };
