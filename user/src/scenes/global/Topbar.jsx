@@ -20,7 +20,7 @@ const Topbar = () => {
   // Function to handle logout
   const handleLogout = () => {
     // Clear details from local storage
-    localStorage.removeItem("user"); // Replace "userDetails" with your specific key
+    localStorage.clear(); // Replace "userDetails" with your specific key
     // Redirect to login or perform other actions if needed
     navigate("/login");
   };

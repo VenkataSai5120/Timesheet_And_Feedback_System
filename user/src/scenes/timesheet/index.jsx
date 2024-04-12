@@ -17,9 +17,8 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { format, addDays, subWeeks, addWeeks } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Spinner from "../../components/Spinner";
 
 const dummyProjects = ["Project A", "Project B", "Project C"];
 const dummyTasks = ["Task 1", "Task 2", "Task 3"];
@@ -52,7 +51,6 @@ const initialActivities = [
 const TimesheetTable = () => {
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
-  const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([
     {
       id: 1,
@@ -79,19 +77,15 @@ const TimesheetTable = () => {
   ]);
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      toast.error("Make Sure to login!");
-      navigate("/");
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log(user);
+  React.useEffect(() => {
+    if (!user) {
+      toast.error("Make sure to login first!");
+      navigate("/login");
     }
-    // Simulating loading delay
-    const timeoutId = setTimeout(() => {
-      setLoading(false); // Once data is loaded, set loading to false
-    }, 2000);
- 
-    return () => clearTimeout(timeoutId); // Cleanup timeout on component unmount
-  }, [navigate]);
+  }, [user, navigate]);
 
   useEffect(() => {
     const hasBAU = activities.some((activity) => activity.type === "BAU");
@@ -209,7 +203,9 @@ const TimesheetTable = () => {
         }
       );
       console.log(savedTimesheetResponse)
+      console.log("success");
       resetActivities();
+      toast.info("Submit the Feedback");
       // Replace console.log with your API call to send data to the backend
     }
     catch (err) {
@@ -218,164 +214,167 @@ const TimesheetTable = () => {
   };
 
   return (
-    <Box
-      mt={2}
-      sx={{
-        "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
-        "& th, & td": { fontWeight: "bold", color: "secondary.main" },
-        "& th:nth-of-type(n+5), & td:nth-of-type(n+5)": { width: "10%" },
-        "& th:nth-of-type(2), & td:nth-of-type(2), & th:nth-of-type(3), & td:nth-of-type(3)":
-          { width: "15%" },
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-      }}
-    >
-      <Header
-        title="TimeSheet"
-        subtitle="Your TimeSheet, the blueprint of productivity"
-      />
+    <>
+      <ToastContainer /> {/* Add ToastContainer here */}
       <Box
+        mt={2}
         sx={{
+          "& > div": { gridColumn: isNonMobile ? undefined : "span 4" },
+          "& th, & td": { fontWeight: "bold", color: "secondary.main" },
+          "& th:nth-of-type(n+5), & td:nth-of-type(n+5)": { width: "10%" },
+          "& th:nth-of-type(2), & td:nth-of-type(2), & th:nth-of-type(3), & td:nth-of-type(3)":
+            { width: "15%" },
           display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          padding: "8px",
+          flexDirection: "column",
+          minHeight: "100vh",
         }}
       >
-        <IconButton onClick={goToPreviousWeek}>{"<"}</IconButton>
-        <span style={{ color: "red" }}>
-          {format(monday, "MM/dd")} - {format(weekdays[4], "MM/dd")}
-        </span>
-        <IconButton onClick={goToNextWeek}>{">"}</IconButton>
-      </Box>
+        <Header
+          title="TimeSheet"
+          subtitle="Your TimeSheet, the blueprint of productivity"
+        />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            padding: "8px",
+          }}
+        >
+          <IconButton onClick={goToPreviousWeek}>{"<"}</IconButton>
+          <span style={{ color: "red" }}>
+            {format(monday, "MM/dd")} - {format(weekdays[4], "MM/dd")}
+          </span>
+          <IconButton onClick={goToNextWeek}>{">"}</IconButton>
+        </Box>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell width="5%">Project Type</TableCell>
-            <TableCell width="15%">Project Name</TableCell>
-            <TableCell width="15%">Task</TableCell>
-            <TableCell width="15%">Comment</TableCell>
-            {weekdays.map((day, index) => (
-              <TableCell key={index}>
-                <div>{format(day, "MM/dd/yyyy")}</div>
-                <div>{format(day, "EEE")}</div>
-              </TableCell>
-            ))}
-            <TableCell width="20%">Total Hours</TableCell>
-            <TableCell width="20%"></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {activities.map((activity, activityIndex) => (
-            <TableRow key={activity.id}>
-              <TableCell>{activity.type}</TableCell>
-              <TableCell>
-                <TextField
-                  select
-                  value={activity.name}
-                  color="secondary"
-                  onChange={(e) =>
-                    setActivities(
-                      activities.map((a) =>
-                        a.id === activity.id
-                          ? { ...a, name: e.target.value }
-                          : a
-                      )
-                    )
-                  }
-                >
-                  {dummyProjects.map((project, index) => (
-                    <MenuItem key={index} value={project}>
-                      {project}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </TableCell>
-              <TableCell>
-                <TextField
-                  select
-                  value={activity.task}
-                  color="secondary"
-                  onChange={(e) =>
-                    setActivities(
-                      activities.map((a) =>
-                        a.id === activity.id
-                          ? { ...a, task: e.target.value }
-                          : a
-                      )
-                    )
-                  }
-                >
-                  {dummyTasks.map((task, index) => (
-                    <MenuItem key={index} value={task}>
-                      {task}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={activity.comment}
-                  color="secondary"
-                  onChange={(e) =>
-                    setActivities(
-                      activities.map((a) =>
-                        a.id === activity.id
-                          ? { ...a, comment: e.target.value }
-                          : a
-                      )
-                    )
-                  }
-                />
-              </TableCell>
-              {activity.hours.map((hours, index) => (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell width="5%">Project Type</TableCell>
+              <TableCell width="15%">Project Name</TableCell>
+              <TableCell width="15%">Task</TableCell>
+              <TableCell width="15%">Comment</TableCell>
+              {weekdays.map((day, index) => (
                 <TableCell key={index}>
+                  <div>{format(day, "MM/dd/yyyy")}</div>
+                  <div>{format(day, "EEE")}</div>
+                </TableCell>
+              ))}
+              <TableCell width="20%">Total Hours</TableCell>
+              <TableCell width="20%"></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {activities.map((activity, activityIndex) => (
+              <TableRow key={activity.id}>
+                <TableCell>{activity.type}</TableCell>
+                <TableCell>
                   <TextField
-                    type="number"
-                    value={hours}
+                    select
+                    value={activity.name}
                     color="secondary"
-                    inputProps={{ min: 0, max: 24 }}
                     onChange={(e) =>
-                      handleHoursChange(activityIndex, index, e.target.value)
+                      setActivities(
+                        activities.map((a) =>
+                          a.id === activity.id
+                            ? { ...a, name: e.target.value }
+                            : a
+                        )
+                      )
+                    }
+                  >
+                    {dummyProjects.map((project, index) => (
+                      <MenuItem key={index} value={project}>
+                        {project}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    select
+                    value={activity.task}
+                    color="secondary"
+                    onChange={(e) =>
+                      setActivities(
+                        activities.map((a) =>
+                          a.id === activity.id
+                            ? { ...a, task: e.target.value }
+                            : a
+                        )
+                      )
+                    }
+                  >
+                    {dummyTasks.map((task, index) => (
+                      <MenuItem key={index} value={task}>
+                        {task}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    value={activity.comment}
+                    color="secondary"
+                    onChange={(e) =>
+                      setActivities(
+                        activities.map((a) =>
+                          a.id === activity.id
+                            ? { ...a, comment: e.target.value }
+                            : a
+                        )
+                      )
                     }
                   />
                 </TableCell>
-              ))}
-              <TableCell>
-                {activity.hours.reduce(
-                  (acc, cur) => acc + parseInt(cur),
-                  0
-                )}
-              </TableCell>
-              <TableCell>
-                {activity.isRemovable && (
-                  <IconButton onClick={() => removeActivity(activity.id)}>
-                    <RemoveIcon />
+                {activity.hours.map((hours, index) => (
+                  <TableCell key={index}>
+                    <TextField
+                      type="number"
+                      value={hours}
+                      color="secondary"
+                      inputProps={{ min: 0, max: 24 }}
+                      onChange={(e) =>
+                        handleHoursChange(activityIndex, index, e.target.value)
+                      }
+                    />
+                  </TableCell>
+                ))}
+                <TableCell>
+                  {activity.hours.reduce(
+                    (acc, cur) => acc + parseInt(cur),
+                    0
+                  )}
+                </TableCell>
+                <TableCell>
+                  {activity.isRemovable && (
+                    <IconButton onClick={() => removeActivity(activity.id)}>
+                      <RemoveIcon />
+                    </IconButton>
+                  )}
+                  <IconButton onClick={() => addActivity(activity.type)}>
+                    <AddIcon />
                   </IconButton>
-                )}
-                <IconButton onClick={() => addActivity(activity.type)}>
-                  <AddIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-          <TableRow>
-            <TableCell colSpan={4}>Total</TableCell>
-            {getTotalHours().map((total, index) => (
-              <TableCell key={index}>{total}</TableCell>
+                </TableCell>
+              </TableRow>
             ))}
-            <TableCell>{getTotalHoursTotal()}</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-      <Box sx={{ alignSelf: "center", margin: "20px 0" }}>
-        <Button variant="contained" color="secondary" onClick={handleSubmit}>
-          Submit
-        </Button>
+            <TableRow>
+              <TableCell colSpan={4}>Total</TableCell>
+              {getTotalHours().map((total, index) => (
+                <TableCell key={index}>{total}</TableCell>
+              ))}
+              <TableCell>{getTotalHoursTotal()}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <Box sx={{ alignSelf: "center", margin: "20px 0" }}>
+          <Button variant="contained" color="secondary" onClick={handleSubmit}>
+            Submit
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

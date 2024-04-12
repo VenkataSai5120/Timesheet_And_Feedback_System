@@ -5,11 +5,48 @@ import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useState } from "react";
 
 const FeedbackForm = () => {
   const navigate = useNavigate(); // Hook to access navigation
-
+  const [questions, setQuestions] = useState([]);
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const user = localStorage.getItem("user");
+  React.useEffect(() => {
+    if (!user) {
+      toast.error("Make sure to login first!");
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const ID = JSON.parse(user).ID;
+        const response = await fetch("http://localhost:6001/fetch/questions", {
+          method: "POST",
+          body: JSON.stringify({ID}),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (response.ok) {
+          const data = await response.json(); // Read response once
+          console.log(data); // Check the value of data
+          setQuestions(data); // Use the data
+        } else {
+          throw new Error("Failed to fetch data");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+  
 
   // Validation schema for feedback
   const validationSchema = yup.object().shape({
@@ -18,20 +55,6 @@ const FeedbackForm = () => {
       .required("Feedback is required")
       .max(2000, "Feedback should be less than 2000 characters"),
   });
-
-  // Dummy data of questions
-  const questions = [
-    "What do you like about our service?",
-    "How can we improve our product?",
-    "Did you find our website easy to navigate?",
-    "What features would you like to see added?",
-    "How likely are you to recommend our service to a friend?",
-    "What was your main reason for using our service?",
-    "Did you encounter any issues while using our product?",
-    "How satisfied are you with our customer support?",
-    "What other products or services would you like us to offer?",
-    "Overall, how would you rate your experience with us?",
-  ];
 
   return (
     <Box m="20px">

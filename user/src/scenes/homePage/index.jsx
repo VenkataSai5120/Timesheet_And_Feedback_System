@@ -1,9 +1,10 @@
 import { Box } from "@mui/material";
-import Header from "../../components/Header"; 
+import Header from "../../components/Header";
 import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
 import "react-toastify/dist/ReactToastify.css"; // Import the CSS for toast notifications
 import { useNavigate } from "react-router-dom"; // Import the navigate function from react-router-dom
-import robotImage from "./robot.png"; 
+import robotImage from "./robot.png";
+import React from "react";
 
 const LoginForm = () => {
   return (
@@ -17,22 +18,26 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   console.log(user);
-  if (!user) {
-    toast.error("Make sure to login first!");
-    navigate("/home");
-    return <ToastContainer />;
-  }
+  React.useEffect(() => {
+    if (!user) {
+      toast.error("Make sure to login first!");
+      navigate("/login");
+    }
+  }, [user, navigate]);
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-    >
-      <LoginForm />
-      <img src={robotImage} alt="Placeholder" style={{ maxWidth: "100%", marginTop: "20px" }} />
-    </Box>
+    <>
+      <ToastContainer />;
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <LoginForm />
+        <img src={robotImage} alt="Placeholder" style={{ maxWidth: "100%", marginTop: "20px" }} />
+      </Box>
+    </>
   );
 };
 
